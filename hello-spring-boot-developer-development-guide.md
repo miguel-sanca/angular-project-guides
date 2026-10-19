@@ -124,7 +124,7 @@ sequenceDiagram
 
 En tus guías de Angular se usó **Outside-In** porque el frontend nace de la UI. En backend conviene lo contrario:
 
-1. El **dominio** no depende de nada → se puede escribir y **testear primero** con JUnit, sin levantar Spring.
+1. El **dominio** no depende de nada → se puede escribir y **probar primero** con JUnit, sin levantar Spring.
 2. La capa REST solo **traduce**; si el dominio ya está probado, el controller queda trivial.
 3. Coincide con el historial real del proyecto (primero `Developer`/`PersonName`, después endpoints).
 
@@ -397,7 +397,7 @@ build/
 💡 `mvnw` es un script de shell: si se guarda con fin de línea Windows (CRLF) falla en Linux/Mac/CI con `/bin/sh^M: bad interpreter`. Este archivo fuerza LF para `mvnw` y CRLF para `mvnw.cmd`.
 
 > [!TIP]
-> Si `.idea/` llegó a commitearse alguna vez: `git rm -r --cached .idea`
+> Si `.idea/` llegó a incluirse en un commit alguna vez: `git rm -r --cached .idea`
 
 🔀 **Commit en `develop`:**
 ```bash
