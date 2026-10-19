@@ -1,0 +1,471 @@
+{
+  "info": {
+    "name": "catch-up-platform",
+    "description": "Favorite Sources API of the CatchUp Platform. Run in order with the Collection Runner. Each run uses a fresh newsApiKey, so it can be repeated against the same database.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Favorite Sources",
+      "item": [
+        {
+          "name": "US01 - Create favorite source",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Unique key per run so the collection can be re-run against the same database",
+                  "pm.collectionVariables.set(\"newsApiKey\", \"postman-\" + Date.now());"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", () => pm.response.to.have.status(201));",
+                  "",
+                  "const body = pm.response.json();",
+                  "",
+                  "pm.test(\"Body has numeric id and the sent values\", () => {",
+                  "    pm.expect(body.id).to.be.a(\"number\");",
+                  "    pm.expect(body.newsApiKey).to.eql(pm.collectionVariables.get(\"newsApiKey\"));",
+                  "    pm.expect(body.sourceId).to.eql(\"bbc-news\");",
+                  "});",
+                  "",
+                  "pm.collectionVariables.set(\"favoriteSourceId\", body.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newsApiKey\": \"{{newsApiKey}}\",\n  \"sourceId\": \"bbc-news\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/favorite-sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "favorite-sources"
+              ]
+            }
+          }
+        },
+        {
+          "name": "US01 - Create second favorite source",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", () => pm.response.to.have.status(201));",
+                  "",
+                  "pm.test(\"Source id is 'cnn'\", () => {",
+                  "    pm.expect(pm.response.json().sourceId).to.eql(\"cnn\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newsApiKey\": \"{{newsApiKey}}\",\n  \"sourceId\": \"cnn\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/favorite-sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "favorite-sources"
+              ]
+            }
+          }
+        },
+        {
+          "name": "US01 - Duplicate favorite source is rejected",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Without a global exception handler the original code answers 500 (see hotfix 1.0.1)",
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newsApiKey\": \"{{newsApiKey}}\",\n  \"sourceId\": \"bbc-news\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/favorite-sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "favorite-sources"
+              ]
+            }
+          }
+        },
+        {
+          "name": "US01 - Blank source id is rejected",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newsApiKey\": \"{{newsApiKey}}\",\n  \"sourceId\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/favorite-sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "favorite-sources"
+              ]
+            }
+          }
+        },
+        {
+          "name": "US02 - Get favorite source by id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.test(\"Returns the created favorite source\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body.id).to.eql(Number(pm.collectionVariables.get(\"favoriteSourceId\")));",
+                  "    pm.expect(body.sourceId).to.eql(\"bbc-news\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/favorite-sources/{{favoriteSourceId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "favorite-sources",
+                "{{favoriteSourceId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "US02 - Get favorite source by unknown id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/favorite-sources/999999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "favorite-sources",
+                "999999999"
+              ]
+            }
+          }
+        },
+        {
+          "name": "US03 - Get all favorite sources by news API key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.test(\"Returns both favorite sources of this key\", () => {",
+                  "    const sourceIds = pm.response.json().map(source => source.sourceId);",
+                  "    pm.expect(sourceIds).to.have.members([\"bbc-news\", \"cnn\"]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/favorite-sources?newsApiKey={{newsApiKey}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "favorite-sources"
+              ],
+              "query": [
+                {
+                  "key": "newsApiKey",
+                  "value": "{{newsApiKey}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "US04 - Get favorite source by news API key and source id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200 OK\", () => pm.response.to.have.status(200));",
+                  "",
+                  "pm.test(\"Returns a single object for 'cnn'\", () => {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.be.an(\"object\");",
+                  "    pm.expect(body.sourceId).to.eql(\"cnn\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/favorite-sources?newsApiKey={{newsApiKey}}&sourceId=cnn",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "favorite-sources"
+              ],
+              "query": [
+                {
+                  "key": "newsApiKey",
+                  "value": "{{newsApiKey}}"
+                },
+                {
+                  "key": "sourceId",
+                  "value": "cnn"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "US04 - Unknown source id for news API key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/favorite-sources?newsApiKey={{newsApiKey}}&sourceId=unknown-source",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "favorite-sources"
+              ],
+              "query": [
+                {
+                  "key": "newsApiKey",
+                  "value": "{{newsApiKey}}"
+                },
+                {
+                  "key": "sourceId",
+                  "value": "unknown-source"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "US03 - Unknown news API key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/favorite-sources?newsApiKey=unknown-key-{{$timestamp}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "favorite-sources"
+              ],
+              "query": [
+                {
+                  "key": "newsApiKey",
+                  "value": "unknown-key-{{$timestamp}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "US03 - Missing newsApiKey parameter",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/favorite-sources",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "favorite-sources"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
